@@ -114,7 +114,7 @@ def parse_block_and_execute(block: List[str], code_length: int):
 def get_interval_from_letter(letter: str, code: Dict[str, Item]) -> Interval:
 	return code.get(letter).get_interval()
 
-def encode_text(text: str, data: Dict[str, Item]) -> List[Fraction]:
+def encode_text(text: str, data: Dict[str, Item]) -> Interval:
 	low = Fraction(0)
 	high = Fraction(1)
 
@@ -122,32 +122,29 @@ def encode_text(text: str, data: Dict[str, Item]) -> List[Fraction]:
 		value = data[char]
 		L_j = value.get_low_interval()
 		H_j = value.get_high_interval()
-		low = L_n(low, high, L_j)  # Update value
-		high = H_n(low, high, H_j)  # Update value
+		L_new = L_n(low, high, L_j)
+		H_new = H_n(low, high, H_j)
+		low = L_new
+		high = H_new
 
 	# Todo: saber en qué número difieren y coger hasta ahí
-	#  Pasar números a binario e ir comparando posiciones
-	return [low, high]
-
-def get_binary_representation(num: Fraction) -> str:
-	return bin((num * num.denominator).numerator).replace("0b", "", 1)
+	return Interval(low, high)
 
 def format_double(prob: Fraction):
-	print(BigFloat.exact((prob * prob.denominator).numerator.__str__(), precision=30000))
-	return '{0:.700f}'.format(prob.__float__())
+	return '{0:.67f}'.format(prob.__float__())
 
 def extra(block: List[str]):
 	text = block[0].replace("\n", "  ")
-	decimal_number = block[1].split("=")[1]
+	# decimal_number = Fraction(
+	# 	'0.000043723549797898591721392024494969426730337697823784101482176758459453066962369033542775336352959728718950429608980985676027888224125578288059362589061792054085868395733118505341056261262090203455257826882107106382758898313358161479500662411667905474417676637240520870998887083015801430848215218829490177677419013592548648042990672843542710000500989383210861245890726052680857680590770600003781281100948863249504849794025130030439972128427607370121484278784033282599578339304436665601724813112099210434283274881909443597637631925768367410806910406888140311095213181858649261672911268222556400596'
+	# )
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
 	encoded = encode_text(text, probabilities)
-	print(
-		# f'Low: {get_binary_representation(encoded[0])}\n'
-		# f'High: {get_binary_representation(encoded[1])}\n'
-		f'Algo : {format_double(encoded[1])}\n'
-	)
+	decoded = decode(probabilities, encoded.get_low(), len(text))
+	new_line = '\n'
+	print(f"Cadena decodificada 1:\n\n{decoded.replace('  ', new_line)}\n")
 
 if __name__ == '__main__':
 	run("./datos_3.txt")

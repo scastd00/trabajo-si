@@ -1,6 +1,0 @@
-bigfloat==0.4.0
-numpy==1.22.3
-pip==22.0.4
-setuptools==61.2.0
-six==1.16.0
-wheel==0.37.1
