@@ -9,37 +9,83 @@ from Interval import Interval
 from Item import Item
 
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
+	"""
+	Determines the new number to be decoded.
+
+	:param num: number to decode.
+	:param lj: lower part of the interval
+	:param hj: higher part of the interval.
+	:return:
+	"""
 	return (num - lj) / (hj - lj)
 
 def L_n(L: Fraction, H: Fraction, L_j: Fraction) -> Fraction:
+	"""
+	Calculates the new lower interval part.
+
+	:param L: current lower interval value.
+	:param H: current higher interval value.
+	:param L_j: lower part of the interval (between 0 and 1) of the letter.
+	:return: new lower interval part.
+	"""
 	return L + ((H - L) * L_j)
 
 def H_n(L: Fraction, H: Fraction, H_j: Fraction) -> Fraction:
+	"""
+	Calculates the new higher interval part.
+
+	:param L: current lower interval value.
+	:param H: current higher interval value.
+	:param H_j: higher part of the interval (between 0 and 1) of the letter.
+	:return: new higher interval part.
+	"""
 	return L + ((H - L) * H_j)
 
 def entropy(data: Dict[str, Item]) -> Fraction:
+	"""
+	Calculates the entropy of the code.
+	Formula used:
+			   m
+		H(F) = Σ p_i * log2(1 / p_i)
+			  i=1
+
+	:param data: table to calculate entropy
+	:return: entropy of the code
+	"""
 	result = Fraction(0)
 
-	for key, value in data.items():
-		p_i = value.get_probability()
+	for k, v in data.items():
+		p_i = v.get_probability()
 		result += p_i * log2(1 / p_i)
 
 	return result
 
-def get_total_frequency(mappings: Dict[str, Item]) -> int:
-	return sum(mappings.values())
-
 def determine_decode_interval_of(num: Fraction, interval_dict: Dict[str, Item]) -> str:
+	"""
+	Determines the letter of the interval in which the given number is in the code table.
+
+	:param num: number to search the interval for.
+	:param interval_dict: code table containing all the intervals of the code.
+	:return: the letter of the interval in which the given number is.
+	"""
 	interval_key = ""
 
-	for key, value in interval_dict.items():
-		if value.get_low_interval() <= num < value.get_high_interval():
-			interval_key = key
+	for k, v in interval_dict.items():
+		if v.get_low_interval() <= num < v.get_high_interval():
+			interval_key = k
 			break
 
 	return interval_key
 
 def build_alphabet_with_probabilities(text: str) -> Dict[str, Item]:
+	"""
+	Creates a dictionary with the letters of the text mapped with an Item, containing
+	the probability, frequency and the interval of it.
+	If a letter is not in the dictionary, the entry is created with the default value.
+
+	:param text: text to map.
+	:return: Dict containing the letters of the text mapped.
+	"""
 	alphabet: Dict[str, Item] = {}
 	val = Fraction(1, len(text))
 
@@ -48,11 +94,17 @@ def build_alphabet_with_probabilities(text: str) -> Dict[str, Item]:
 			alphabet[char].add_probability(val)
 			alphabet[char].increment_frequency()
 		except KeyError:
-			alphabet[char] = Item(val)
+			alphabet[char] = Item(val)  # Entry is created in alphabet
 
 	return alphabet
 
 def intervals_from_probabilities(probabilities: Dict[str, Item]):
+	"""
+	Calculates the intervals (higher and lower parts) of each item in the dictionary.
+
+	:param probabilities: code table of probabilities.
+	:return: the same dictionary with the intervals of each item added to it.
+	"""
 	lo = Fraction(0)
 
 	for letter, item in probabilities.items():
@@ -62,10 +114,23 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 
 def run(file: str):
 	valid_blocks = read_file(file)
-
 	execute(valid_blocks[0])
 
 def read_file(file: str) -> List[List[str]]:
+	"""
+	Reads a file and returns a list containing each of the parts in it.
+	File structure is as follows:
+
+	Ejercicio <number>
+
+	Content (text to be encoded)
+
+	número decimal=<number>
+	EOF
+
+	:param file: file to read.
+	:return: List with each part of the file.
+	"""
 	file = open(file)
 	all_lines = file.read()
 	split_on_exercise = re.split("Ejercicio .\n\n", all_lines)
@@ -81,59 +146,86 @@ def read_file(file: str) -> List[List[str]]:
 	return valid_blocks
 
 def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
+	"""
+	Performs the arithmetic decoding of the number.
+
+	:param all_values: code dictionary with the intervals.
+	:param number: number to decode.
+	:param iterations: number of iterations to perform.
+	:return: decoded string.
+	"""
 	auxStr = ""
 
 	for i in range(iterations):
 		s = determine_decode_interval_of(number, all_values)
 		auxStr += s
-		interval = all_values.get(s).get_interval()
+		interval = all_values[s].get_interval()
 		number = num_n_decode(number, interval.get_low(), interval.get_high())
 
 	return auxStr
 
-def parse_block_and_execute(block: List[str], code_length: int):
-	text = block[0].replace("\n", "  ")
-	decimal_number = block[1].split("=")[1]
+def encode(text: str, data: Dict[str, Item]) -> Interval:
+	"""
+	Performs the arithmetic encoding of the given text.
 
-	probabilities = build_alphabet_with_probabilities(text)
-	intervals_from_probabilities(probabilities)
+	low                                              high
+	0                        0.5                        1
+	[-------------------------|-------------------------)
+			  |(new interval)|
+	          ^--------------^
+	         L_j           H_j
 
-	num = Fraction(decimal_number)
-	decoded = decode(probabilities, num, code_length)
-	print(f"Cadena: {decoded} -> Entropy:", entropy(probabilities))
+	The new interval is going to be spitted into the same intervals as the previous one.
+	It deepens inside the (0, 1) interval adding more decimals to a Fraction.
 
-def get_interval_from_letter(letter: str, code: Dict[str, Item]) -> Interval:
-	return code.get(letter).get_interval()
-
-def encode_text(text: str, data: Dict[str, Item]) -> Interval:
+	:param text: text to encode.
+	:param data: code dictionary with the intervals.
+	:return:
+	"""
 	low = Fraction(0)
 	high = Fraction(1)
 
 	for char in text:
 		value = data[char]
+		# Get the interval of a character between 0 and 1.
 		L_j = value.get_low_interval()
 		H_j = value.get_high_interval()
+		# Map the new interval to fit in the [ L_j, H_j ) interval
 		L_new = L_n(low, high, L_j)
 		H_new = H_n(low, high, H_j)
 		low = L_new
 		high = H_new
 
+	# Todo: soportar que si la precisión hace que sean iguales high y low,
+	#  volver a calcular los dígitos binarios con una precisión mayor.
 	return Interval(low, high)
 
-def get_decimal_digits(num: Fraction) -> str:
-	return Binary.fraction_to_string(num, ndigits=3000, simplify=False).replace("0.", "")
+def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
+	"""
+	Determines the binary representation of the Fraction and takes only the decimal
+	digits, since the number is always between 0 and 1.
+
+	:param num: Number to represent in binary.
+	:param precision: number of decimal digits to calculate.
+	:return: string of binary representation of the decimal part of the Fraction.
+	"""
+	return Binary.fraction_to_string(num, ndigits=precision, simplify=False).replace("0.", "")
 
 def execute(block: List[str]):
 	text = block[0].replace("\n", "  ")
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
-	encoded = encode_text(text, probabilities)
+	encoded = encode(text, probabilities)
 	decoded = decode(probabilities, encoded.get_low(), len(text))
 	new_line = '\n'
-	print(f"Cadena decodificada 1:\n\n{decoded.replace('  ', new_line)}\n")
+	print(f"Decoded string:\n\n{decoded.replace('  ', new_line)}\n")
 
-	print(get_decimal_digits(encoded.get_low()))
+	low = get_decimal_digits(encoded.get_low(), 2000)
+	high = get_decimal_digits(encoded.get_high(), 2000)
+	print(low)
+	print(high)
+	print(low == high)
 
 if __name__ == '__main__':
 	run("./datos_3.txt")

@@ -3,7 +3,6 @@ from fractions import Fraction
 from Interval import Interval
 
 class Item:
-
 	def __init__(self, probability: Fraction, frequency: int = 1):
 		self.probability: Fraction = probability
 		self.frequency: int = frequency
