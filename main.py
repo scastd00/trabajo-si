@@ -3,17 +3,13 @@ from fractions import Fraction
 from math import log2
 from typing import Dict, List
 
+from binary_fractions import Binary
+
 from Interval import Interval
 from Item import Item
 
-from bigfloat import BigFloat
-from bigfloat import Context
-
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	return (num - lj) / (hj - lj)
-
-def x_n_encode(x: Fraction, L: Fraction, H: Fraction, L_n_: Fraction, H_n_: Fraction) -> Fraction:
-	return (((x - L) * (H_n_ - L_n_)) / (H - L)) + L_n_
 
 def L_n(L: Fraction, H: Fraction, L_j: Fraction) -> Fraction:
 	return L + ((H - L) * L_j)
@@ -67,12 +63,7 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 def run(file: str):
 	valid_blocks = read_file(file)
 
-	parse_block_and_execute(valid_blocks[0], 27)
-	extra(valid_blocks[0])
-
-# parse_block_and_execute(valid_blocks[1], 19)
-# parse_block_and_execute(valid_blocks[2], 17)
-# parse_block_and_execute(valid_blocks[3], 27)
+	execute(valid_blocks[0])
 
 def read_file(file: str) -> List[List[str]]:
 	file = open(file)
@@ -127,17 +118,13 @@ def encode_text(text: str, data: Dict[str, Item]) -> Interval:
 		low = L_new
 		high = H_new
 
-	# Todo: saber en qué número difieren y coger hasta ahí
 	return Interval(low, high)
 
-def format_double(prob: Fraction):
-	return '{0:.67f}'.format(prob.__float__())
+def get_decimal_digits(num: Fraction) -> str:
+	return Binary.fraction_to_string(num, ndigits=3000, simplify=False).replace("0.", "")
 
-def extra(block: List[str]):
+def execute(block: List[str]):
 	text = block[0].replace("\n", "  ")
-	# decimal_number = Fraction(
-	# 	'0.000043723549797898591721392024494969426730337697823784101482176758459453066962369033542775336352959728718950429608980985676027888224125578288059362589061792054085868395733118505341056261262090203455257826882107106382758898313358161479500662411667905474417676637240520870998887083015801430848215218829490177677419013592548648042990672843542710000500989383210861245890726052680857680590770600003781281100948863249504849794025130030439972128427607370121484278784033282599578339304436665601724813112099210434283274881909443597637631925768367410806910406888140311095213181858649261672911268222556400596'
-	# )
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
@@ -146,7 +133,7 @@ def extra(block: List[str]):
 	new_line = '\n'
 	print(f"Cadena decodificada 1:\n\n{decoded.replace('  ', new_line)}\n")
 
+	print(get_decimal_digits(encoded.get_low()))
+
 if __name__ == '__main__':
 	run("./datos_3.txt")
-
-# Explica con un ejemplo cómo puede ir el proceso de intercalado
