@@ -3,7 +3,7 @@ from fractions import Fraction
 from math import log2
 from typing import Dict, List
 
-from binary_fractions import Binary
+from binary_fractions import Binary, TwosComplement
 
 from Interval import Interval
 from Item import Item
@@ -211,6 +211,17 @@ def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
 	"""
 	return Binary.fraction_to_string(num, ndigits=precision, simplify=False).replace("0.", "")
 
+def obtain_number_inside_interval(low: str, high: str) -> str:
+	new_high = high.ljust(len(low), '0')
+
+	defer = 0
+	for i in range(len(low)):
+		if low[i] != new_high[i]:
+			defer = i
+			break
+
+	return ""
+
 def execute(block: List[str]):
 	text = block[0].replace("\n", "  ")
 	probabilities = build_alphabet_with_probabilities(text)
@@ -223,6 +234,37 @@ def execute(block: List[str]):
 
 	low = get_decimal_digits(encoded.get_low(), 2000)
 	high = get_decimal_digits(encoded.get_high(), 2000)
+	# low = get_decimal_digits(Fraction("0.2699543"), 40)
+	# high = get_decimal_digits(Fraction("0.271"), 40)
+
+	print("Caso 1")
+	print("Normal")
+	# print(TwosComplement("0.01000101000").to_float(), "No vale")  # Es más pequeño
+	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
+	print(TwosComplement("0.0100010101").to_float()) # Truncar el mayor
+	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
+	# print(TwosComplement("0.01000101100").to_float(), "No vale")  # Es más grande
+	print("Otro\n")
+
+	# Todo: Cuidado al truncar, que si me quedan muchos ceros, me puede quedar más pequeño que el menor
+
+	print("Caso 2.1")
+	print("Normal")
+	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
+	print(TwosComplement("0.01000101001").to_float())  # Sumar 1 a l_r+1
+	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
+	print("Otro\n")
+
+	print("Caso 2.2")
+	print("Normal")
+	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
+	print(TwosComplement("0.01000101000111").to_float())  # Sumar 1 a última cifra donde cambia
+	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
+	print("Otro\n")
+
+	print()
+	num = obtain_number_inside_interval(low, high)
+
 	print(low)
 	print(high)
 	print(low == high)
