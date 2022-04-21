@@ -240,34 +240,39 @@ def execute(block: List[str]):
 	print("Caso 1")
 	print("Normal")
 	# print(TwosComplement("0.01000101000").to_float(), "No vale")  # Es más pequeño
-	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
-	print(TwosComplement("0.0100010101").to_float()) # Truncar el mayor
-	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
+	print("Low: ", TwosComplement("0.0100010100011011101110011001100111101010").to_float())
+	print("     ", TwosComplement("0.0100010101").to_float())  # Truncar el mayor
+	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
 	# print(TwosComplement("0.01000101100").to_float(), "No vale")  # Es más grande
 	print("Otro\n")
 
 	# Todo: Cuidado al truncar, que si me quedan muchos ceros, me puede quedar más pequeño que el menor
 
-	print("Caso 2.1")
+	print("Caso 2")
 	print("Normal")
-	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
-	print(TwosComplement("0.01000101001").to_float())  # Sumar 1 a l_r+1
-	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
+	print("Low: ", TwosComplement("0.0100010100011011101110011001100111101010").to_float())
+	print("     ", TwosComplement("0.01000101000111").to_float())  # Sumar 1 a l_r+1
+	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
 	print("Otro\n")
 
-	print("Caso 2.2")
-	print("Normal")
-	print(TwosComplement("0.0100010100011011101110011001100111101010").to_float())
-	print(TwosComplement("0.01000101000111").to_float())  # Sumar 1 a última cifra donde cambia
-	print(TwosComplement("0.0100010101100000010000011000100100110111").to_float())
-	print("Otro\n")
+	# Notas que no sé si servirán
+	# Si cuando coinciden, lo hacen en 1, al sumar es 0, pero se arrastra 1 a la posición anterior
+	#
+	# print("Caso Especial")
+	# print("Normal")
+	# print("Low: ", TwosComplement("0.0100010100111011101110011001000111101010").to_float())
+	# print("     ", TwosComplement("0.010001010011101110111001100101").to_float())  # Sumar 1 a l_r+1
+	# print("High:", TwosComplement("0.0100010100111011101110011001100111101010").to_float())
+	# print("Otro\n")
+
 
 	print()
 	num = obtain_number_inside_interval(low, high)
+	print(num)
 
-	print(low)
-	print(high)
-	print(low == high)
+# print(low)
+# print(high)
+# print(low == high)
 
 if __name__ == '__main__':
 	run("./datos_3.txt")
