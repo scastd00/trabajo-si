@@ -242,7 +242,7 @@ def obtain_number_inside_interval(low: str, high: str) -> str:
 	r = _r(low, high)
 	result: str
 
-	if len(high) > r + 1:
+	if len(high) > r + 2:
 		result = high[0:r + 2]  # r starts at 0, so r+1 => r+2
 	else:
 		# Todo: handle this case
