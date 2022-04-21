@@ -26,6 +26,7 @@ def L_n(L: Fraction, H: Fraction, L_j: Fraction) -> Fraction:
 	:param L: current lower interval value.
 	:param H: current higher interval value.
 	:param L_j: lower part of the interval (between 0 and 1) of the letter.
+
 	:return: new lower interval part.
 	"""
 	return L + ((H - L) * L_j)
@@ -180,7 +181,7 @@ def encode(text: str, data: Dict[str, Item]) -> Interval:
 
 	:param text: text to encode.
 	:param data: code dictionary with the intervals.
-	:return:
+	:return: the interval in which the number resulting from the encoding is.
 	"""
 	low = Fraction(0)
 	high = Fraction(1)
@@ -196,8 +197,6 @@ def encode(text: str, data: Dict[str, Item]) -> Interval:
 		low = L_new
 		high = H_new
 
-	# Todo: soportar que si la precisión hace que sean iguales high y low,
-	#  volver a calcular los dígitos binarios con una precisión mayor.
 	return Interval(low, high)
 
 def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
@@ -211,16 +210,48 @@ def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
 	"""
 	return Binary.fraction_to_string(num, ndigits=precision, simplify=False).replace("0.", "")
 
-def obtain_number_inside_interval(low: str, high: str) -> str:
-	new_high = high.ljust(len(low), '0')
+def binstr_to_fraction(binary: str) -> Fraction:
+	"""
+	Converts a binary string representation into a Fraction.
 
-	defer = 0
-	for i in range(len(low)):
-		if low[i] != new_high[i]:
-			defer = i
+	:param binary: binary representation of a number.
+	:return: Fraction obtained from the binary representation of a number.
+	"""
+	return binstr_to_binary(binary).fraction
+
+def binstr_to_binary(binary: str) -> Binary:
+	return Binary(binary)
+
+def _r(bin1: str, bin2: str) -> int:
+	len1 = len(bin1)
+	len2 = len(bin2)
+	pos = -1
+
+	for i in range(min(len1, len2)):
+		if bin1[i] != bin2[i]:
+			pos = i - 1
 			break
 
-	return ""
+	if pos == -1:
+		# Todo: handle special case
+		print("Special")
+
+	return pos
+
+def obtain_number_inside_interval(low: str, high: str) -> str:
+	r = _r(low, high)
+	result: str
+
+	if len(high) > r + 1:
+		result = high[0:r + 2]  # r starts at 0, so r+1 => r+2
+	else:
+		# Todo: handle this case
+		result = ""
+
+	return "0." + result
+
+def print_float(value: float):
+	print(f'{value:.30f}')
 
 def execute(block: List[str]):
 	text = block[0].replace("\n", "  ")
@@ -228,22 +259,44 @@ def execute(block: List[str]):
 	intervals_from_probabilities(probabilities)
 
 	encoded = encode(text, probabilities)
-	high_str, low_str, precision = calculate_different_string_representation(encoded)
+	high_str, low_str = interval_binary_representation(encoded)
 
-	print("Precision: " + str(precision))
-	print("Low:  " + str(low_str))
-	print("High: " + str(high_str))
+	print(str(low_str))
+	print(str(high_str))
 	print(low_str == high_str)
 
-	decoded = decode(probabilities, encoded.get_low(), len(text))
+	num = obtain_number_inside_interval(low_str, high_str)
+
+	# print_float(binstr_to_fraction("0." + num).__float__())
+
+	print(binstr_to_binary("0." + low_str))
+	print(binstr_to_binary(num))
+	print(binstr_to_binary("0." + high_str))
+
+	# _r = r(low_str, high_str)
+	# print(low_str[_r], low_str[_r+1])
+	# print(high_str[_r], high_str[_r+1])
+
+	num = encoded.get_low()  # Todo: remove this line
+
+	decoded = decode(
+		probabilities,
+		num,
+		# binstr_to_fraction(num),
+		len(text)
+	)
+
 	new_line = '\n'
 	print(f"Decoded string:\n\n{decoded.replace('  ', new_line)}\n")
 
-	low = get_decimal_digits(encoded.get_low(), 2000)
-	high = get_decimal_digits(encoded.get_high(), 2000)
-	# low = get_decimal_digits(Fraction("0.2699543"), 40)
-	# high = get_decimal_digits(Fraction("0.271"), 40)
+	# pruebas_casos()
+	print(num)
 
+# print(low)
+# print(high)
+# print(low == high)
+
+def pruebas_casos():
 	print("Caso 1")
 	print("Normal")
 	# print(TwosComplement("0.01000101000").to_float(), "No vale")  # Es más pequeño
@@ -252,16 +305,13 @@ def execute(block: List[str]):
 	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
 	# print(TwosComplement("0.01000101100").to_float(), "No vale")  # Es más grande
 	print("Otro\n")
-
 	# Todo: Cuidado al truncar, que si me quedan muchos ceros, me puede quedar más pequeño que el menor
-
 	print("Caso 2")
 	print("Normal")
 	print("Low: ", TwosComplement("0.0100010100011011101110011001100111101010").to_float())
 	print("     ", TwosComplement("0.01000101000111").to_float())  # Sumar 1 a l_r+1
 	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
 	print("Otro\n")
-
 	# Notas que no sé si servirán
 	# Si cuando coinciden, lo hacen en 1, al sumar es 0, pero se arrastra 1 a la posición anterior
 	#
@@ -271,16 +321,19 @@ def execute(block: List[str]):
 	# print("     ", TwosComplement("0.010001010011101110111001100101").to_float())  # Sumar 1 a l_r+1
 	# print("High:", TwosComplement("0.0100010100111011101110011001100111101010").to_float())
 	# print("Otro\n")
-
 	print()
-	num = obtain_number_inside_interval(low, high)
-	print(num)
 
-# print(low)
-# print(high)
-# print(low == high)
+def interval_binary_representation(encoded: Interval) -> [str, str]:
+	"""
+	Calculates the interval values in binary representation. The precision is
+	incremented until the representations are different.
 
-def calculate_different_string_representation(encoded):
+	Precision starts at 100 and doubles its value each iteration.
+
+	:param encoded: Interval to calculate the binary representation.
+	:return: Binary representation of the interval *decimal* values (both different).
+			 The integer part of the interval is removed
+	"""
 	precision = 100
 	low_str = get_decimal_digits(encoded.get_low(), precision)
 	high_str = get_decimal_digits(encoded.get_high(), precision)
@@ -291,8 +344,7 @@ def calculate_different_string_representation(encoded):
 		low_str = get_decimal_digits(encoded.get_low(), precision)
 		high_str = get_decimal_digits(encoded.get_high(), precision)
 
-	return high_str, low_str, precision
-
+	return high_str, low_str
 
 if __name__ == '__main__':
 	run("./datos_3.txt")
