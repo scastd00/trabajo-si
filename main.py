@@ -228,6 +228,13 @@ def execute(block: List[str]):
 	intervals_from_probabilities(probabilities)
 
 	encoded = encode(text, probabilities)
+	high_str, low_str, precision = calculate_different_string_representation(encoded)
+
+	print("Precision: " + str(precision))
+	print("Low:  " + str(low_str))
+	print("High: " + str(high_str))
+	print(low_str == high_str)
+
 	decoded = decode(probabilities, encoded.get_low(), len(text))
 	new_line = '\n'
 	print(f"Decoded string:\n\n{decoded.replace('  ', new_line)}\n")
@@ -265,7 +272,6 @@ def execute(block: List[str]):
 	# print("High:", TwosComplement("0.0100010100111011101110011001100111101010").to_float())
 	# print("Otro\n")
 
-
 	print()
 	num = obtain_number_inside_interval(low, high)
 	print(num)
@@ -273,6 +279,20 @@ def execute(block: List[str]):
 # print(low)
 # print(high)
 # print(low == high)
+
+def calculate_different_string_representation(encoded):
+	precision = 100
+	low_str = get_decimal_digits(encoded.get_low(), precision)
+	high_str = get_decimal_digits(encoded.get_high(), precision)
+
+	# Compare strings until they differ to make the correct encoding
+	while low_str == high_str:
+		precision *= 2  # Increase the precision
+		low_str = get_decimal_digits(encoded.get_low(), precision)
+		high_str = get_decimal_digits(encoded.get_high(), precision)
+
+	return high_str, low_str, precision
+
 
 if __name__ == '__main__':
 	run("./datos_3.txt")
