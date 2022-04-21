@@ -217,17 +217,32 @@ def binstr_to_fraction(binary: str) -> Fraction:
 	:param binary: binary representation of a number.
 	:return: Fraction obtained from the binary representation of a number.
 	"""
-	return binstr_to_binary(binary).fraction
+	return _binstr_to_binary(binary).fraction
 
-def binstr_to_binary(binary: str) -> Binary:
+def _binstr_to_binary(binary: str) -> Binary:
+	"""
+	Creates a binary representation of a binary string number.
+
+	:param binary: binary representation of a number.
+	:return: Binary object for the given representation.
+	"""
 	return Binary(binary)
 
 def _r(bin1: str, bin2: str) -> int:
+	"""
+	Calculates the position at which the given strings differ from each other.
+	Starting from 0.
+
+	:param bin1: first string
+	:param bin2: other string
+	:return: position of the difference.
+	"""
 	len1 = len(bin1)
 	len2 = len(bin2)
 	pos = -1
 
 	for i in range(min(len1, len2)):
+		# print(f'{i}: {bin1[i]}{bin2[i]}')
 		if bin1[i] != bin2[i]:
 			pos = i - 1
 			break
@@ -236,16 +251,32 @@ def _r(bin1: str, bin2: str) -> int:
 		# Todo: handle special case
 		print("Special")
 
+	# print('pos', pos)
 	return pos
 
-def obtain_number_inside_interval(low: str, high: str) -> str:
+def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
+	"""
+	Calculates the decimal part of a number that is between the given low and high string values.
+	There are 2 cases:
+		If high has more than r+1 values:
+			-> return the first r+1 values from high (Truncate high).
+
+		Otherwise:
+			If low[r+1]+1 != high[r+1]:
+				-> return first r values of low and the r+1 value + 1 (low[0:r] low[r+1]+1)
+			If low[r+1]+1 == high[r+1]: (Else)
+				-> return first r+1 values and the next ones until a 0 is found, and it is added 1.
+
+	:param low: low part of the interval.
+	:param high: high part of the interval.
+	:return: the decimal part of the number that is inside the interval [low, high).
+	"""
 	r = _r(low, high)
 	result: str
 
-	if len(high) > r + 2:
-		result = high[0:r + 2]  # r starts at 0, so r+1 => r+2
+	if len(high) > (r + 1) + 1:
+		result = high[:(r + 1) + 1]  # We must include the r+1 position, so (r+1) + 1
 	else:
-		# Todo: handle this case
 		result = ""
 
 	return "0." + result
@@ -263,26 +294,25 @@ def execute(block: List[str]):
 
 	print(str(low_str))
 	print(str(high_str))
-	print(low_str == high_str)
 
-	num = obtain_number_inside_interval(low_str, high_str)
+	num = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
 
-	# print_float(binstr_to_fraction("0." + num).__float__())
+	print()
+	print(_binstr_to_binary("0." + low_str))
+	print(_binstr_to_binary(num))
+	print(_binstr_to_binary("0." + high_str))
 
-	print(binstr_to_binary("0." + low_str))
-	print(binstr_to_binary(num))
-	print(binstr_to_binary("0." + high_str))
+	print(_binstr_to_binary("0." + low_str) < _binstr_to_binary(num) < _binstr_to_binary("0." + high_str))
 
 	# _r = r(low_str, high_str)
 	# print(low_str[_r], low_str[_r+1])
 	# print(high_str[_r], high_str[_r+1])
 
-	num = encoded.get_low()  # Todo: remove this line
+	# num = encoded.get_low()  # Todo: remove this line
 
 	decoded = decode(
 		probabilities,
-		num,
-		# binstr_to_fraction(num),
+		binstr_to_fraction(num),
 		len(text)
 	)
 
@@ -291,10 +321,6 @@ def execute(block: List[str]):
 
 	# pruebas_casos()
 	print(num)
-
-# print(low)
-# print(high)
-# print(low == high)
 
 def pruebas_casos():
 	print("Caso 1")
