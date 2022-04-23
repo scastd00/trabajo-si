@@ -279,7 +279,7 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 			result = low[:r] + add(low[r + 1])  # Cuidado si cambia de 1 a 0, caso en que low[r] = high[r] = 1
 		else:
 			result = low[:r + 1]
-			for l in low:
+			for l in low[r + 1:]:
 				if l == '0':
 					result += '1'  # The last addition
 				else:
