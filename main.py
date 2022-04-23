@@ -1,9 +1,8 @@
-import re
 from fractions import Fraction
 from math import log2
-from typing import Dict, List
+from typing import Dict
 
-from binary_fractions import Binary, TwosComplement
+from binary_fractions import Binary
 
 from Interval import Interval
 from Item import Item
