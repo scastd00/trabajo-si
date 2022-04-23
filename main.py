@@ -275,7 +275,6 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 		result = high[:r + 1]  # We must include the r+1 position, so (r+1) + 1
 	else:
 		max_len = max(len(high), len(low))
-		print(max_len)
 		low = low.ljust(max_len + 10, '0')
 		high = high.ljust(max_len + 10, '0')
 		# Esto no es necesario, pero vale para calcular un número que fijo está dentro del intervalo
@@ -315,6 +314,8 @@ def execute(block: str):
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
+	print(f"Plain text to encode:\n{text}\n")
+
 	encoded = encode(text, probabilities)
 	high_str, low_str = interval_binary_representation(encoded)
 
@@ -322,14 +323,14 @@ def execute(block: str):
 	# high_str += '00'
 	num = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
 
-	print("Nums: ", "0." + low_str)
-	print("Nums: ", num)
-	print("Nums: ", "0." + high_str)
+	print("Low :", _binstr_to_binary("0." + low_str).__float__(), "\t", "0." + low_str)
+	print("Num :", _binstr_to_binary(num).__float__(), "\t", num)
+	print("High:", _binstr_to_binary("0." + high_str).__float__(), "\t\t", "0." + high_str)
 
-	print(_binstr_to_binary("0." + low_str).fraction.__float__())
-	print(_binstr_to_binary(num).fraction.__float__())
-	print(_binstr_to_binary("0." + high_str).fraction.__float__())
-	print()
+	# print(_binstr_to_binary("0." + low_str).fraction.__float__())
+	# print(_binstr_to_binary(num).fraction.__float__())
+	# print(_binstr_to_binary("0." + high_str).fraction.__float__())
+	# print()
 
 	if _binstr_to_binary("0." + low_str) <= _binstr_to_binary(num) < _binstr_to_binary("0." + high_str):
 		print("The number is inside the interval.")
@@ -343,7 +344,7 @@ def execute(block: str):
 	)
 
 	new_line = '\n'
-	print(f"\nDecoded string:\n\n{decoded.replace('  ', new_line)}\n")
+	print(f"\nDecoded string:\n{decoded.replace('  ', new_line)}\n")
 
 # Some tests in previous commits
 
