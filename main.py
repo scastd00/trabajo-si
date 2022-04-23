@@ -115,9 +115,9 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 
 def run(file: str):
 	valid_blocks = read_file(file)
-	execute(valid_blocks[0])
+	execute(valid_blocks)
 
-def read_file(file: str) -> List[List[str]]:
+def read_file(file: str) -> str:
 	"""
 	Reads a file and returns a list containing each of the parts in it.
 	File structure is as follows:
@@ -132,19 +132,7 @@ def read_file(file: str) -> List[List[str]]:
 	:param file: file to read.
 	:return: List with each part of the file.
 	"""
-	file = open(file)
-	all_lines = file.read()
-	split_on_exercise = re.split("Ejercicio .\n\n", all_lines)
-	valid_blocks = []
-
-	for text in split_on_exercise:
-		if len(text) != 0:
-			valid_blocks.append(text.split("\n\n")[0:2])
-
-	file.close()
-	del all_lines
-	del split_on_exercise
-	return valid_blocks
+	return open(file).read()
 
 def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
 	"""
@@ -242,17 +230,26 @@ def _r(bin1: str, bin2: str) -> int:
 	pos = -1
 
 	for i in range(min(len1, len2)):
-		# print(f'{i}: {bin1[i]}{bin2[i]}')
 		if bin1[i] != bin2[i]:
 			pos = i - 1
 			break
 
 	if pos == -1:
-		# Todo: handle special case
 		print("Special")
 
-	# print('pos', pos)
 	return pos
+
+def add(number: str) -> str:
+	"""
+	Makes the addition of the number string received + 1 (binary)
+
+	:param number: number to add.
+	:return: number + 1 (as string)
+	"""
+	if number == '1':
+		return '0'  # 1 + 1 = 0 (binary)
+	else:
+		return '1'  # 0 + 1 = 1 (binary)
 
 def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 	"""
@@ -271,44 +268,43 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 	:param high: high part of the interval.
 	:return: the decimal part of the number that is inside the interval [low, high).
 	"""
-	r = _r(low, high)
+	r = _r(low, high) + 1  # To include the position
+	# IMPORTANT: r = r + 1
 	result: str
 
-	if len(high) > (r + 1) + 1:
-		result = high[:(r + 1) + 1]  # We must include the r+1 position, so (r+1) + 1
+	if len(high) > r + 1:
+		result = high[:r + 1]  # We must include the r+1 position, so (r+1) + 1
 	else:
-		result = ""
+		if add(low[r]) != high[r]:
+			result = low[:r] + add(low[r + 1])  # Cuidado si cambia de 1 a 0, caso en que low[r] = high[r] = 1
+		else:
+			result = low[:r + 1]
+			for l in low:
+				if l == '0':
+					result += '1'  # The last addition
+				else:
+					result += l  # '1'
 
 	return "0." + result
 
 def print_float(value: float):
 	print(f'{value:.30f}')
 
-def execute(block: List[str]):
-	text = block[0].replace("\n", "  ")
+def execute(block: str):
+	text = block.replace("\n", "  ")
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
 	encoded = encode(text, probabilities)
 	high_str, low_str = interval_binary_representation(encoded)
 
-	print(str(low_str))
-	print(str(high_str))
-
 	num = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
 
-	print()
 	print(_binstr_to_binary("0." + low_str))
 	print(_binstr_to_binary(num))
 	print(_binstr_to_binary("0." + high_str))
 
 	print(_binstr_to_binary("0." + low_str) < _binstr_to_binary(num) < _binstr_to_binary("0." + high_str))
-
-	# _r = r(low_str, high_str)
-	# print(low_str[_r], low_str[_r+1])
-	# print(high_str[_r], high_str[_r+1])
-
-	# num = encoded.get_low()  # Todo: remove this line
 
 	decoded = decode(
 		probabilities,
@@ -319,35 +315,7 @@ def execute(block: List[str]):
 	new_line = '\n'
 	print(f"Decoded string:\n\n{decoded.replace('  ', new_line)}\n")
 
-	# pruebas_casos()
-	print(num)
-
-def pruebas_casos():
-	print("Caso 1")
-	print("Normal")
-	# print(TwosComplement("0.01000101000").to_float(), "No vale")  # Es más pequeño
-	print("Low: ", TwosComplement("0.0100010100011011101110011001100111101010").to_float())
-	print("     ", TwosComplement("0.0100010101").to_float())  # Truncar el mayor
-	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
-	# print(TwosComplement("0.01000101100").to_float(), "No vale")  # Es más grande
-	print("Otro\n")
-	# Todo: Cuidado al truncar, que si me quedan muchos ceros, me puede quedar más pequeño que el menor
-	print("Caso 2")
-	print("Normal")
-	print("Low: ", TwosComplement("0.0100010100011011101110011001100111101010").to_float())
-	print("     ", TwosComplement("0.01000101000111").to_float())  # Sumar 1 a l_r+1
-	print("High:", TwosComplement("0.0100010101100000010000011000100100110111").to_float())
-	print("Otro\n")
-	# Notas que no sé si servirán
-	# Si cuando coinciden, lo hacen en 1, al sumar es 0, pero se arrastra 1 a la posición anterior
-	#
-	# print("Caso Especial")
-	# print("Normal")
-	# print("Low: ", TwosComplement("0.0100010100111011101110011001000111101010").to_float())
-	# print("     ", TwosComplement("0.010001010011101110111001100101").to_float())  # Sumar 1 a l_r+1
-	# print("High:", TwosComplement("0.0100010100111011101110011001100111101010").to_float())
-	# print("Otro\n")
-	print()
+# Some tests in previous commits
 
 def interval_binary_representation(encoded: Interval) -> [str, str]:
 	"""

@@ -1,5 +1,3 @@
-Ejercicio X
-
 Un aire marino, pesado y fresco, entró en mis pulmones con la primera
 sensación confusa de la ciudad: una masa de casas dormidas; de establecimientos
 cerrados; de faroles como centinelas borrachos de soledad. Una respiración
@@ -7,5 +5,3 @@ grande, dificultosa, venía con el cuchicheo de la madrugada. Muy cerca, a mi
 espalda, enfrente de las callejuelas misteriosas que conducen al Borne, sobre mi
 corazón excitado, estaba el mar.
 (NADA, Carmen Laforet, 1921-2004)
-
-número_decimal=0.96402816270036736770957975564255630564009
