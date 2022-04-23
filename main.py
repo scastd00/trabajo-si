@@ -304,6 +304,10 @@ def execute(block: str):
 	print(_binstr_to_binary(num))
 	print(_binstr_to_binary("0." + high_str))
 
+	print(_binstr_to_binary("0." + low_str).fraction.__float__())
+	print(_binstr_to_binary(num).fraction.__float__())
+	print(_binstr_to_binary("0." + high_str).fraction.__float__())
+
 	print(_binstr_to_binary("0." + low_str) < _binstr_to_binary(num) < _binstr_to_binary("0." + high_str))
 
 	decoded = decode(
@@ -341,4 +345,4 @@ def interval_binary_representation(encoded: Interval) -> [str, str]:
 	return high_str, low_str
 
 if __name__ == '__main__':
-	run("./datos_3.txt")
+	run("datos_3")
