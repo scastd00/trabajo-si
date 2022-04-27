@@ -1,11 +1,12 @@
 from fractions import Fraction
 from math import log2
-from typing import Dict
+from typing import Dict, List
 
 from binary_fractions import Binary
 
 from Interval import Interval
 from Item import Item
+from Reader import Reader
 
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	"""
@@ -81,7 +82,7 @@ def determine_decode_interval_of(num: Fraction, interval_dict: Dict[str, Item]) 
 
 	return interval_key
 
-def build_alphabet_with_probabilities(text: str) -> Dict[str, Item]:
+def build_alphabet_with_probabilities(text: List[str]) -> Dict[str, Item]:
 	"""
 	Creates a dictionary with the letters of the text mapped with an Item, containing
 	the probability, frequency and the interval of it.
@@ -122,7 +123,7 @@ def run(file: str):
 	valid_blocks = read_file(file)
 	execute(valid_blocks)
 
-def read_file(file: str) -> str:
+def read_file(file: str) -> List[str]:
 	"""
 	Reads a file and returns a list containing each of the parts in it.
 	File structure is as follows:
@@ -138,7 +139,8 @@ def read_file(file: str) -> str:
 
 	:return: List with each part of the file.
 	"""
-	return open(file).read()
+	reader = Reader(file, 2)
+	return reader.read()
 
 def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
 	"""
@@ -160,7 +162,7 @@ def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> st
 
 	return auxStr
 
-def encode(text: str, data: Dict[str, Item]) -> Interval:
+def encode(text: List[str], data: Dict[str, Item]) -> Interval:
 	"""
 	Performs the arithmetic encoding of the given text.
 
@@ -298,7 +300,7 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 		# Ajustamos las longitudes para poner ceros al final de los números
 		# Así, si hemos terminado las cifras decimales de low, podemos añadir un 1 más
 		# para que el número resultante quede dentro del intervalo. Ver con el texto 'ab'
-		# en el fichero
+		# en el fichero.
 		# Los números quedarían:
 		#	- 0001101100000
 		#			  ^^^^^
@@ -324,8 +326,9 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 def print_float(value: float):
 	print(f'{value:.30f}')
 
-def execute(block: str):
-	text = block.replace("\n", "  ")
+def execute(block: List[str]):
+	# text = block.replace("\n", "  ")
+	text = block
 	probabilities = build_alphabet_with_probabilities(text)
 	intervals_from_probabilities(probabilities)
 
