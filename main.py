@@ -372,4 +372,4 @@ def interval_binary_representation(encoded: Interval) -> [str, str]:
 	return high_str, low_str
 
 if __name__ == '__main__':
-	run("datos_3")
+	run("datos")
