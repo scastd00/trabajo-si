@@ -14,7 +14,8 @@ def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	:param num: number to decode.
 	:param lj: lower part of the interval
 	:param hj: higher part of the interval.
-	:return:
+
+	:return: number mapped to [0, 1)
 	"""
 	return (num - lj) / (hj - lj)
 
@@ -37,6 +38,7 @@ def H_n(L: Fraction, H: Fraction, H_j: Fraction) -> Fraction:
 	:param L: current lower interval value.
 	:param H: current higher interval value.
 	:param H_j: higher part of the interval (between 0 and 1) of the letter.
+
 	:return: new higher interval part.
 	"""
 	return L + ((H - L) * H_j)
@@ -49,8 +51,9 @@ def entropy(data: Dict[str, Item]) -> Fraction:
 		H(F) = Σ p_i * log2(1 / p_i)
 			  i=1
 
-	:param data: table to calculate entropy
-	:return: entropy of the code
+	:param data: table to calculate entropy.
+
+	:return: entropy of the code.
 	"""
 	result = Fraction(0)
 
@@ -66,6 +69,7 @@ def determine_decode_interval_of(num: Fraction, interval_dict: Dict[str, Item]) 
 
 	:param num: number to search the interval for.
 	:param interval_dict: code table containing all the intervals of the code.
+
 	:return: the letter of the interval in which the given number is.
 	"""
 	interval_key = ""
@@ -84,6 +88,7 @@ def build_alphabet_with_probabilities(text: str) -> Dict[str, Item]:
 	If a letter is not in the dictionary, the entry is created with the default value.
 
 	:param text: text to map.
+
 	:return: Dict containing the letters of the text mapped.
 	"""
 	alphabet: Dict[str, Item] = {}
@@ -103,6 +108,7 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 	Calculates the intervals (higher and lower parts) of each item in the dictionary.
 
 	:param probabilities: code table of probabilities.
+
 	:return: the same dictionary with the intervals of each item added to it.
 	"""
 	lo = Fraction(0)
@@ -129,6 +135,7 @@ def read_file(file: str) -> str:
 	EOF
 
 	:param file: file to read.
+
 	:return: List with each part of the file.
 	"""
 	return open(file).read()
@@ -140,6 +147,7 @@ def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> st
 	:param all_values: code dictionary with the intervals.
 	:param number: number to decode.
 	:param iterations: number of iterations to perform.
+
 	:return: decoded string.
 	"""
 	auxStr = ""
@@ -168,6 +176,7 @@ def encode(text: str, data: Dict[str, Item]) -> Interval:
 
 	:param text: text to encode.
 	:param data: code dictionary with the intervals.
+
 	:return: the interval in which the number resulting from the encoding is.
 	"""
 	low = Fraction(0)
@@ -193,6 +202,7 @@ def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
 
 	:param num: Number to represent in binary.
 	:param precision: number of decimal digits to calculate.
+
 	:return: string of binary representation of the decimal part of the Fraction.
 	"""
 	return Binary.fraction_to_string(num, ndigits=precision, simplify=False).replace("0.", "")
@@ -202,6 +212,7 @@ def binstr_to_fraction(binary: str) -> Fraction:
 	Converts a binary string representation into a Fraction.
 
 	:param binary: binary representation of a number.
+
 	:return: Fraction obtained from the binary representation of a number.
 	"""
 	return _binstr_to_binary(binary).fraction
@@ -211,6 +222,7 @@ def _binstr_to_binary(binary: str) -> Binary:
 	Creates a binary representation of a binary string number.
 
 	:param binary: binary representation of a number.
+
 	:return: Binary object for the given representation.
 	"""
 	return Binary(binary)
@@ -220,8 +232,9 @@ def _r(bin1: str, bin2: str) -> int:
 	Calculates the position at which the given strings differ from each other.
 	Starting from 0.
 
-	:param bin1: first string
-	:param bin2: other string
+	:param bin1: first string.
+	:param bin2: other string.
+
 	:return: position of the difference.
 	"""
 	len1 = len(bin1)
@@ -243,7 +256,8 @@ def add(number: str) -> str:
 	Makes the addition of the number string received + 1 (binary)
 
 	:param number: number to add.
-	:return: number + 1 (as string)
+
+	:return: number + 1 (as string).
 	"""
 	if number == '1':
 		return '0'  # 1 + 1 = 0 (binary)
@@ -265,6 +279,7 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 
 	:param low: low part of the interval.
 	:param high: high part of the interval.
+
 	:return: the decimal part of the number that is inside the interval [low, high).
 	"""
 	r = _r(low, high) + 1  # To include the position
@@ -323,9 +338,13 @@ def execute(block: str):
 	# high_str += '00'
 	num = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
 
-	print("Low :", _binstr_to_binary("0." + low_str).__float__(), "\t", "0." + low_str)
-	print("Num :", _binstr_to_binary(num).__float__(), "\t", num)
-	print("High:", _binstr_to_binary("0." + high_str).__float__(), "\t\t", "0." + high_str)
+	print("Low :", _binstr_to_binary("0." + low_str).__float__())
+	print("Num :", _binstr_to_binary(num).__float__())
+	print("High:", _binstr_to_binary("0." + high_str).__float__())
+	print()
+	print("Low :", "0." + low_str)
+	print("Num :", num)
+	print("High:", "0." + high_str)
 
 	# print(_binstr_to_binary("0." + low_str).fraction.__float__())
 	# print(_binstr_to_binary(num).fraction.__float__())
@@ -356,8 +375,9 @@ def interval_binary_representation(encoded: Interval) -> [str, str]:
 	Precision starts at 100 and doubles its value each iteration.
 
 	:param encoded: Interval to calculate the binary representation.
+
 	:return: Binary representation of the interval *decimal* values (both different).
-			 The integer part of the interval is removed
+			 The integer part of the interval is removed.
 	"""
 	precision = 100
 	low_str = get_decimal_digits(encoded.get_low(), precision)
