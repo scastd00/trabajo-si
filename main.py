@@ -134,7 +134,9 @@ def run(file: str):
 
 def calculateRatios(lengths: List[int]):
 	for length in lengths:
-		print(length, '/', lengths[0], (lengths[0] - length) / lengths[0])
+		calc = lengths[0] / length
+		print(length, ':', lengths[0], calc)
+		print(f'1 character every {math.floor(calc)}')
 
 def read_file(file: str, step: int = 1) -> List[str]:
 	"""
@@ -145,7 +147,7 @@ def read_file(file: str, step: int = 1) -> List[str]:
 	EOF
 
 	:param file: file to read.
-	:param step: step when reading the file
+	:param step: step when reading the file.
 
 	:return: List with each part of the file.
 	"""
