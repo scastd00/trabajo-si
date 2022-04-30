@@ -1,3 +1,4 @@
+import math
 from fractions import Fraction
 from math import log2
 from typing import Dict, List
@@ -120,26 +121,28 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 		lo += frac
 
 def run(file: str):
-	valid_blocks = read_file(file)
-	execute(valid_blocks)
+	length = len(read_file(file))
+	divisors = divisorsOf(length)
+	print(divisors)
 
-def read_file(file: str) -> List[str]:
+	for i in divisors:
+		valid_blocks = read_file(file, i)
+		execute(valid_blocks)
+
+def read_file(file: str, step: int = 1) -> List[str]:
 	"""
 	Reads a file and returns a list containing each of the parts in it.
 	File structure is as follows:
 
-	Ejercicio <number>
-
 	Content (text to be encoded)
-
-	número decimal=<number>
 	EOF
 
 	:param file: file to read.
+	:param step: step when reading the file
 
 	:return: List with each part of the file.
 	"""
-	reader = Reader(file, 2)
+	reader = Reader(file, step)
 	return reader.read()
 
 def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
@@ -393,6 +396,15 @@ def interval_binary_representation(encoded: Interval) -> [str, str]:
 		high_str = get_decimal_digits(encoded.get_high(), precision)
 
 	return high_str, low_str
+
+def divisorsOf(num: int) -> List[int]:
+	divisors = []
+
+	for i in range(1, math.ceil(num / 2) + 1):
+		if num % i == 0:
+			divisors.append(i)
+
+	return divisors
 
 if __name__ == '__main__':
 	run("datos")
