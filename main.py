@@ -123,11 +123,18 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 def run(file: str):
 	length = len(read_file(file))
 	divisors = divisorsOf(length)
-	print(divisors)
+
+	encodedLengths = []
 
 	for i in divisors:
 		valid_blocks = read_file(file, i)
-		execute(valid_blocks)
+		encodedLengths.append(execute(valid_blocks))
+
+	calculateRatios(encodedLengths)
+
+def calculateRatios(lengths: List[int]):
+	for length in lengths:
+		print(length, '/', lengths[0], (lengths[0] - length) / lengths[0])
 
 def read_file(file: str, step: int = 1) -> List[str]:
 	"""
@@ -329,7 +336,7 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 def print_float(value: float):
 	print(f'{value:.30f}')
 
-def execute(block: List[str]):
+def execute(block: List[str]) -> int:
 	# text = block.replace("\n", "  ")
 	text = block
 	probabilities = build_alphabet_with_probabilities(text)
@@ -357,10 +364,10 @@ def execute(block: List[str]):
 	# print(_binstr_to_binary("0." + high_str).fraction.__float__())
 	# print()
 
-	if _binstr_to_binary("0." + low_str) <= _binstr_to_binary(num) < _binstr_to_binary("0." + high_str):
-		print("The number is inside the interval.")
-	else:
-		print("The number is outside the interval.")
+	# if _binstr_to_binary("0." + low_str) <= _binstr_to_binary(num) < _binstr_to_binary("0." + high_str):
+	# 	print("The number is inside the interval.")
+	# else:
+	# 	print("The number is outside the interval.")
 
 	decoded = decode(
 		probabilities,
@@ -370,6 +377,8 @@ def execute(block: List[str]):
 
 	new_line = '\n'
 	print(f"\nDecoded string:\n{decoded.replace('  ', new_line)}\n")
+
+	return len(num)
 
 # Some tests in previous commits
 

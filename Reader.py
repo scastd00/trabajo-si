@@ -1,6 +1,6 @@
 from typing import List
 
-SPACE = '␣'
+SPACE = ' '
 NEW_LINE = SPACE + SPACE
 EOF = ''
 
