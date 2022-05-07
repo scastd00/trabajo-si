@@ -9,6 +9,8 @@ from Interval import Interval
 from Item import Item
 from Reader import Reader
 
+debug = 0
+
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	"""
 	Determines the new number to be decoded.
@@ -65,7 +67,7 @@ def entropy(data: Dict[str, Item]) -> Fraction:
 
 	return result
 
-def determine_decode_interval_of(num: Fraction, interval_dict: Dict[str, Item]) -> str:
+def determine_letter_of(num: Fraction, interval_dict: Dict[str, Item]) -> str:
 	"""
 	Determines the letter of the interval in which the given number is in the code table.
 
@@ -127,6 +129,7 @@ def run(file: str):
 	encodedLengths = []
 
 	for i in divisors:
+		print(f"DIVISOR: {i}")
 		valid_blocks = read_file(file, i)
 		encodedLengths.append(execute(valid_blocks))
 
@@ -165,11 +168,18 @@ def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> st
 	:return: decoded string.
 	"""
 	auxStr = ""
+	if debug:
+		print(f'Initial number: {number.__float__()}')
 
 	for i in range(iterations):
-		s = determine_decode_interval_of(number, all_values)
+		s = determine_letter_of(number, all_values)
 		auxStr += s
 		interval = all_values[s].get_interval()
+		if debug:
+			print(f'Num: {format_float(number.__float__(), 5)} inside of '
+				  f'[{format_float(interval.get_low().__float__(), 5)}, {format_float(interval.get_high().__float__(), 5)})'
+				  f' -> letter: {s}')
+
 		number = num_n_decode(number, interval.get_low(), interval.get_high())
 
 	return auxStr
@@ -219,7 +229,7 @@ def get_decimal_digits(num: Fraction, precision: int = 500) -> str:
 
 	:return: string of binary representation of the decimal part of the Fraction.
 	"""
-	return Binary.fraction_to_string(num, ndigits=precision, simplify=False).replace("0.", "")
+	return Binary.fraction_to_string(num, precision, simplify=False).replace("0.", "")
 
 def binstr_to_fraction(binary: str) -> Fraction:
 	"""
@@ -333,12 +343,23 @@ def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 				else:
 					result += l
 
-	return "0." + result
+	if debug:
+		print(f"Value of r = {r}")
+
+	return result
 
 def print_float(value: float):
-	print(f'{value:.30f}')
+	print(format_float(value, 30))
+
+def format_float(value: float, decimal_places: int) -> str:
+	return f'{value:.{decimal_places}f}'
 
 def execute(block: List[str]) -> int:
+	"""
+
+	:param block:
+	:return: the length of the encoded number (only decimal places)
+	"""
 	# text = block.replace("\n", "  ")
 	text = block
 	probabilities = build_alphabet_with_probabilities(text)
@@ -349,40 +370,23 @@ def execute(block: List[str]) -> int:
 	encoded = encode(text, probabilities)
 	high_str, low_str = interval_binary_representation(encoded)
 
-	# low_str += '00'
-	# high_str += '00'
-	num = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
+	num_decimal_part = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
 
-	print("Low :", _binstr_to_binary("0." + low_str).__float__())
-	print("Num :", _binstr_to_binary(num).__float__())
-	print("High:", _binstr_to_binary("0." + high_str).__float__())
-	print()
-	print("Low :", "0." + low_str)
-	print("Num :", num)
-	print("High:", "0." + high_str)
-
-	# print(_binstr_to_binary("0." + low_str).fraction.__float__())
-	# print(_binstr_to_binary(num).fraction.__float__())
-	# print(_binstr_to_binary("0." + high_str).fraction.__float__())
-	# print()
-
-	# if _binstr_to_binary("0." + low_str) <= _binstr_to_binary(num) < _binstr_to_binary("0." + high_str):
-	# 	print("The number is inside the interval.")
-	# else:
-	# 	print("The number is outside the interval.")
+	if debug:
+		print("Low :", "0." + low_str)
+		print("Num :", "0." + num_decimal_part)
+		print("High:", "0." + high_str)
 
 	decoded = decode(
 		probabilities,
-		binstr_to_fraction(num),
+		binstr_to_fraction("0." + num_decimal_part),
 		len(text)
 	)
 
 	new_line = '\n'
 	print(f"\nDecoded string:\n{decoded.replace('  ', new_line)}\n")
 
-	return len(num)
-
-# Some tests in previous commits
+	return len(num_decimal_part)
 
 def interval_binary_representation(encoded: Interval) -> [str, str]:
 	"""
@@ -415,6 +419,7 @@ def divisorsOf(num: int) -> List[int]:
 		if num % i == 0:
 			divisors.append(i)
 
+	print(f"Divisors of {num}: {divisors}")
 	return divisors
 
 if __name__ == '__main__':
