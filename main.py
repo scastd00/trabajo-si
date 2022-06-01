@@ -12,6 +12,7 @@ from Reader import Reader
 
 debug = 0
 BITS_IN_ASCII = 8
+SEPARATOR = 'X'
 
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	"""
@@ -142,11 +143,11 @@ def read_file(file: str, step: int = 1) -> List[str]:
 	"""
 	return Reader(file, step).read()
 
-def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
+def decode(probabilities: Dict[str, Item], number: Fraction, iterations: int) -> str:
 	"""
 	Performs the arithmetic decoding of the number.
 
-	:param all_values: code dictionary with the intervals.
+	:param probabilities: code dictionary with the intervals.
 	:param number: number to decode.
 	:param iterations: number of iterations to perform.
 
@@ -157,9 +158,9 @@ def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> st
 		print(f'Initial number: {number.__float__()}')
 
 	for i in range(iterations):
-		s = determine_letter_of(number, all_values)
+		s = determine_letter_of(number, probabilities)
 		auxStr += s
-		interval = all_values[s].get_interval()
+		interval = probabilities[s].get_interval()
 		if debug:
 			print(f'Num: {format_float(number.__float__(), 5)} inside of '
 				  f'[{format_float(interval.get_low().__float__(), 5)}, {format_float(interval.get_high().__float__(), 5)})'
@@ -220,7 +221,7 @@ def binstr_to_fraction(binary: str) -> Fraction:
 	"""
 	Converts a binary string representation into a Fraction.
 
-	:param binary: binary representation of a number.
+	:param binary: binary representation of a number. IMPORTANT: the binary string must be like '0.decimals'
 
 	:return: Fraction obtained from the binary representation of a number.
 	"""
@@ -397,10 +398,36 @@ def run(file_name: str):
 
 		end_time = time()  # End timer
 
+		encoded_text = SEPARATOR.join(encoded_blocks)
+
 		print(f'Execution time {end_time - start_time} seconds')
 		print(f'Encoded blocks: {encoded_blocks}')
 		ratio = calculate_ratio(encoded_length, file_content_length * BITS_IN_ASCII)
-		print(f'Ratio: {ratio}')
+		print(f'Ratio: {ratio} {encoded_length} / {file_content_length * BITS_IN_ASCII}\n\n')
+
+		print(block_divisor)
+		decoded = decode_text_with_separator(encoded_text, SEPARATOR, probabilities_by_letter, block_divisor)
+		print(f'Decoded text: {decoded}')
+
+def decode_text_with_separator(
+		text: str, separator: str, probabilities: Dict[str, Item], iterations: int
+) -> str:
+	"""
+	Decodes a text with a separator.
+
+	:param text: Text to decode.
+	:param separator: Separator to use.
+	:param probabilities: Probabilities of each character.
+	:param iterations: Number of iterations to perform.
+
+	:return: Decoded text.
+	"""
+	decoded_text = ''
+	blocks = text.split(separator)
+	for block in blocks:
+		decoded_text += decode(probabilities, binstr_to_fraction("0." + block), iterations)
+
+	return decoded_text
 
 def encode_block(block: str, probs: Dict[str, Item]) -> str:
 	"""
