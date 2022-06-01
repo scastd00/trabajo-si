@@ -2,6 +2,7 @@ import math
 from fractions import Fraction
 from math import log2
 from typing import Dict, List
+from time import time
 
 from binary_fractions import Binary
 
@@ -10,6 +11,7 @@ from Item import Item
 from Reader import Reader
 
 debug = 0
+BITS_IN_ASCII = 8
 
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	"""
@@ -85,20 +87,20 @@ def determine_letter_of(num: Fraction, interval_dict: Dict[str, Item]) -> str:
 
 	return interval_key
 
-def build_alphabet_with_probabilities(text: List[str]) -> Dict[str, Item]:
+def build_alphabet_with_probabilities(text_blocks: List[str]) -> Dict[str, Item]:
 	"""
 	Creates a dictionary with the letters of the text mapped with an Item, containing
 	the probability, frequency and the interval of it.
 	If a letter is not in the dictionary, the entry is created with the default value.
 
-	:param text: text to map.
+	:param text_blocks: text to map.
 
 	:return: Dict containing the letters of the text mapped.
 	"""
 	alphabet: Dict[str, Item] = {}
-	val = Fraction(1, len(text))
+	val = Fraction(1, len(text_blocks))
 
-	for char in text:
+	for char in text_blocks:
 		try:
 			alphabet[char].add_probability(val)
 			alphabet[char].increment_frequency()
@@ -107,7 +109,7 @@ def build_alphabet_with_probabilities(text: List[str]) -> Dict[str, Item]:
 
 	return alphabet
 
-def intervals_from_probabilities(probabilities: Dict[str, Item]):
+def add_intervals_to_probs(probabilities: Dict[str, Item]):
 	"""
 	Calculates the intervals (higher and lower parts) of each item in the dictionary.
 
@@ -122,24 +124,8 @@ def intervals_from_probabilities(probabilities: Dict[str, Item]):
 		item.set_interval(Interval(lo, lo + frac))
 		lo += frac
 
-def run(file: str):
-	length = len(read_file(file))
-	divisors = divisorsOf(length)
-
-	encodedLengths = []
-
-	for i in divisors:
-		print(f"DIVISOR: {i}")
-		valid_blocks = read_file(file, i)
-		encodedLengths.append(execute(valid_blocks))
-
-	calculateRatios(encodedLengths)
-
-def calculateRatios(lengths: List[int]):
-	for length in lengths:
-		calc = lengths[0] / length
-		print(length, ':', lengths[0], calc)
-		print(f'1 character every {math.floor(calc)}')
+def calculate_ratio(length: int, base_ratio: int) -> float:
+	return Fraction(length, base_ratio).__float__()
 
 def read_file(file: str, step: int = 1) -> List[str]:
 	"""
@@ -154,8 +140,7 @@ def read_file(file: str, step: int = 1) -> List[str]:
 
 	:return: List with each part of the file.
 	"""
-	reader = Reader(file, step)
-	return reader.read()
+	return Reader(file, step).read()
 
 def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> str:
 	"""
@@ -184,7 +169,7 @@ def decode(all_values: Dict[str, Item], number: Fraction, iterations: int) -> st
 
 	return auxStr
 
-def encode(text: List[str], data: Dict[str, Item]) -> Interval:
+def encode(text: str, probs: Dict[str, Item]) -> Interval:
 	"""
 	Performs the arithmetic encoding of the given text.
 
@@ -199,7 +184,7 @@ def encode(text: List[str], data: Dict[str, Item]) -> Interval:
 	It deepens inside the (0, 1) interval adding more decimals to a Fraction.
 
 	:param text: text to encode.
-	:param data: code dictionary with the intervals.
+	:param probs: code dictionary with the intervals.
 
 	:return: the interval in which the number resulting from the encoding is.
 	"""
@@ -207,7 +192,7 @@ def encode(text: List[str], data: Dict[str, Item]) -> Interval:
 	high = Fraction(1)
 
 	for char in text:
-		value = data[char]
+		value = probs[char]
 		# Get the interval of a character between 0 and 1.
 		L_j = value.get_low_interval()
 		H_j = value.get_high_interval()
@@ -354,40 +339,6 @@ def print_float(value: float):
 def format_float(value: float, decimal_places: int) -> str:
 	return f'{value:.{decimal_places}f}'
 
-def execute(block: List[str]) -> int:
-	"""
-
-	:param block:
-	:return: the length of the encoded number (only decimal places)
-	"""
-	# text = block.replace("\n", "  ")
-	text = block
-	probabilities = build_alphabet_with_probabilities(text)
-	intervals_from_probabilities(probabilities)
-
-	print(f"Plain text to encode:\n{text}\n")
-
-	encoded = encode(text, probabilities)
-	high_str, low_str = interval_binary_representation(encoded)
-
-	num_decimal_part = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
-
-	if debug:
-		print("Low :", "0." + low_str)
-		print("Num :", "0." + num_decimal_part)
-		print("High:", "0." + high_str)
-
-	decoded = decode(
-		probabilities,
-		binstr_to_fraction("0." + num_decimal_part),
-		len(text)
-	)
-
-	new_line = '\n'
-	print(f"\nDecoded string:\n{decoded.replace('  ', new_line)}\n")
-
-	return len(num_decimal_part)
-
 def interval_binary_representation(encoded: Interval) -> [str, str]:
 	"""
 	Calculates the interval values in binary representation. The precision is
@@ -412,15 +363,61 @@ def interval_binary_representation(encoded: Interval) -> [str, str]:
 
 	return high_str, low_str
 
-def divisorsOf(num: int) -> List[int]:
+def divisorsOf(num: int, minimum: int = 0) -> List[int]:
 	divisors = []
 
 	for i in range(1, math.ceil(num / 2) + 1):
-		if num % i == 0:
+		if num % i == 0 and i >= minimum:
 			divisors.append(i)
 
 	print(f"Divisors of {num}: {divisors}")
 	return divisors
+
+def run(file_name: str):
+	file_content = read_file(file_name)
+	file_content_length = len(file_content)
+	divisors = divisorsOf(file_content_length, 0)  # Todo: Change to something more reasonable
+
+	# Each character is mapped a probability for all execution
+	probabilities_by_letter = build_alphabet_with_probabilities(file_content)
+	add_intervals_to_probs(probabilities_by_letter)
+
+	for block_divisor in divisors:
+		print(f"DIVISOR: {block_divisor}")
+		file_blocks = read_file(file_name, block_divisor)
+		encoded_blocks = []
+		encoded_length = 0
+
+		start_time = time()  # Start timer
+
+		for block in file_blocks:
+			encoded_block = encode_block(block, probabilities_by_letter)
+			encoded_blocks.append(encoded_block)
+			encoded_length += len(encoded_block)
+
+		end_time = time()  # End timer
+
+		print(f'Execution time {end_time - start_time} seconds')
+		print(f'Encoded blocks: {encoded_blocks}')
+		ratio = calculate_ratio(encoded_length, file_content_length * BITS_IN_ASCII)
+		print(f'Ratio: {ratio}')
+
+def encode_block(block: str, probs: Dict[str, Item]) -> str:
+	"""
+	:param block: Block to encode. Example: 'Python e'
+	:param probs: Probabilities of each character
+	:return: Encoded block
+	"""
+	encoded_block = encode(block, probs)
+	high_str, low_str = interval_binary_representation(encoded_block)
+	num_decimal_part = obtain_decimal_part_of_number_inside_interval(low_str, high_str)
+
+	if debug:
+		print("Low :", "0." + low_str)
+		print("Num :", "0." + num_decimal_part)
+		print("High:", "0." + high_str)
+
+	return num_decimal_part
 
 if __name__ == '__main__':
 	run("datos")

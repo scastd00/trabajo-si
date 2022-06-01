@@ -34,3 +34,6 @@ class Item:
 
 	def __add__(self, other):
 		return self.probability + other.get_probability()
+
+	def __str__(self):
+		return "Probability:{}  Frequency:{}  Interval:{}".format(self.probability.__float__(), self.frequency, self.interval.__str__())

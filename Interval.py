@@ -12,4 +12,4 @@ class Interval:
 		return self.high
 
 	def __str__(self):
-		return '[{0}, {1}]'.format(self.low.__float__(), self.high.__float__())
+		return '[{}, {}]'.format(self.low.__float__(), self.high.__float__())
