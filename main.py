@@ -1,11 +1,11 @@
 import math
 from fractions import Fraction
-from math import log2
 from typing import Dict, List
 from time import time
 
 from binary_fractions import Binary
 
+from ExportCSV import ExportCSV
 from Interval import Interval
 from Item import Item
 from Reader import Reader
@@ -13,6 +13,7 @@ from Reader import Reader
 debug = 0
 BITS_IN_ASCII = 8
 SEPARATOR = 'X'
+NEW_LINE = '\n'
 
 def num_n_decode(num: Fraction, lj: Fraction, hj: Fraction) -> Fraction:
 	"""
@@ -50,26 +51,6 @@ def H_n(L: Fraction, H: Fraction, H_j: Fraction) -> Fraction:
 	"""
 	return L + ((H - L) * H_j)
 
-def entropy(data: Dict[str, Item]) -> Fraction:
-	"""
-	Calculates the entropy of the code.
-	Formula used:
-			   m
-		H(F) = Σ p_i * log2(1 / p_i)
-			  i=1
-
-	:param data: table to calculate entropy.
-
-	:return: entropy of the code.
-	"""
-	result = Fraction(0)
-
-	for k, v in data.items():
-		p_i = v.get_probability()
-		result += p_i * log2(1 / p_i)
-
-	return result
-
 def determine_letter_of(num: Fraction, interval_dict: Dict[str, Item]) -> str:
 	"""
 	Determines the letter of the interval in which the given number is in the code table.
@@ -99,7 +80,7 @@ def build_alphabet_with_probabilities(text_blocks: List[str]) -> Dict[str, Item]
 	:return: Dict containing the letters of the text mapped.
 	"""
 	alphabet: Dict[str, Item] = {}
-	val = Fraction(1, len(text_blocks))
+	val = Fraction(1, len(text_blocks))  # Default value
 
 	for char in text_blocks:
 		try:
@@ -121,12 +102,19 @@ def add_intervals_to_probs(probabilities: Dict[str, Item]):
 	lo = Fraction(0)
 
 	for letter, item in probabilities.items():
-		frac = item.get_probability()
-		item.set_interval(Interval(lo, lo + frac))
-		lo += frac
+		prob = item.get_probability()
+		item.set_interval(Interval(lo, lo + prob))
+		lo += prob
 
 def calculate_ratio(length: int, base_ratio: int) -> float:
-	return Fraction(length, base_ratio).__float__()
+	"""
+	Calculates the ratio comparing the length of the text to the base ratio.
+
+	:param length: length of the encoded text.
+	:param base_ratio: base ratio of the text.
+	:return: ratio of the text.
+	"""
+	return Fraction(length, base_ratio, _normalize=False).__float__()
 
 def read_file(file: str, step: int = 1) -> List[str]:
 	"""
@@ -153,22 +141,25 @@ def decode(probabilities: Dict[str, Item], number: Fraction, iterations: int) ->
 
 	:return: decoded string.
 	"""
-	auxStr = ""
 	if debug:
 		print(f'Initial number: {number.__float__()}')
 
+	decoded_str = ""
+	num_to_decode = number
+
 	for i in range(iterations):
-		s = determine_letter_of(number, probabilities)
-		auxStr += s
-		interval = probabilities[s].get_interval()
+		decoded_letter = determine_letter_of(num_to_decode, probabilities)
+		decoded_str += decoded_letter
+		interval = probabilities[decoded_letter].get_interval()
+
 		if debug:
-			print(f'Num: {format_float(number.__float__(), 5)} inside of '
+			print(f'Num: {format_float(num_to_decode.__float__(), 5)} inside of '
 				  f'[{format_float(interval.get_low().__float__(), 5)}, {format_float(interval.get_high().__float__(), 5)})'
-				  f' -> letter: {s}')
+				  f' -> letter: {decoded_letter}')
 
-		number = num_n_decode(number, interval.get_low(), interval.get_high())
+		num_to_decode = num_n_decode(num_to_decode, interval.get_low(), interval.get_high())
 
-	return auxStr
+	return decoded_str
 
 def encode(text: str, probs: Dict[str, Item]) -> Interval:
 	"""
@@ -269,10 +260,7 @@ def add(number: str) -> str:
 
 	:return: number + 1 (as string).
 	"""
-	if number == '1':
-		return '0'  # 1 + 1 = 0 (binary)
-	else:
-		return '1'  # 0 + 1 = 1 (binary)
+	return '0' if number == '1' else '1'
 
 def obtain_decimal_part_of_number_inside_interval(low: str, high: str) -> str:
 	"""
@@ -378,10 +366,23 @@ def run(file_name: str):
 	file_content = read_file(file_name)
 	file_content_length = len(file_content)
 	divisors = divisorsOf(file_content_length, 0)  # Todo: Change to something more reasonable
+	# print(divisors)
+	#
+	# return
 
 	# Each character is mapped a probability for all execution
 	probabilities_by_letter = build_alphabet_with_probabilities(file_content)
 	add_intervals_to_probs(probabilities_by_letter)
+	exporter = ExportCSV(file_name + "_Exported.csv")
+	export_list = [
+		[
+			'Longitud de bloque',
+			'Longitud cadena codif. Binaria',
+			'Longitud cadena codif. ASCII',
+			'Ratio',
+			'Tiempo de ejecución (seg)'
+		]
+	]
 
 	for block_divisor in divisors:
 		print(f"DIVISOR: {block_divisor}")
@@ -400,14 +401,19 @@ def run(file_name: str):
 
 		encoded_text = SEPARATOR.join(encoded_blocks)
 
-		print(f'Execution time {end_time - start_time} seconds')
-		print(f'Encoded blocks: {encoded_blocks}')
+		print(f'Execution time {format_float(end_time - start_time, 6)} seconds')
+		# print(f'Encoded blocks: {encoded_blocks}')
+		# print(f'Raw blocks: {file_blocks}')
+		# print(f'Encoded text: {encoded_text}')
 		ratio = calculate_ratio(encoded_length, file_content_length * BITS_IN_ASCII)
-		print(f'Ratio: {ratio} {encoded_length} / {file_content_length * BITS_IN_ASCII}\n\n')
+		print(f'Ratio: {ratio} == {encoded_length} / {file_content_length * BITS_IN_ASCII}')
 
-		print(block_divisor)
 		decoded = decode_text_with_separator(encoded_text, SEPARATOR, probabilities_by_letter, block_divisor)
-		print(f'Decoded text: {decoded}')
+		print(f'Decoded text: {decoded.replace("  ", NEW_LINE)}')
+		print('\n')
+		export_list.append([str(block_divisor), str(encoded_length), str(file_content_length * BITS_IN_ASCII), str(format_float(ratio, 6)), format_float(end_time - start_time, 6)])
+
+	exporter.export(export_list)
 
 def decode_text_with_separator(
 		text: str, separator: str, probabilities: Dict[str, Item], iterations: int
@@ -447,4 +453,4 @@ def encode_block(block: str, probs: Dict[str, Item]) -> str:
 	return num_decimal_part
 
 if __name__ == '__main__':
-	run("datos")
+	run("datos_1800")
