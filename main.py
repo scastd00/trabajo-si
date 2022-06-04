@@ -365,7 +365,7 @@ def divisorsOf(num: int, minimum: int = 0) -> List[int]:
 def run(file_name: str):
 	file_content = read_file(file_name)
 	file_content_length = len(file_content)
-	divisors = divisorsOf(file_content_length, 0)  # Todo: Change to something more reasonable
+	divisors = divisorsOf(file_content_length)  # Todo: Change second parameter to something more reasonable
 	# print(divisors)
 	#
 	# return
@@ -373,7 +373,6 @@ def run(file_name: str):
 	# Each character is mapped a probability for all execution
 	probabilities_by_letter = build_alphabet_with_probabilities(file_content)
 	add_intervals_to_probs(probabilities_by_letter)
-	exporter = ExportCSV(file_name + "_Exported.csv")
 	export_list = [
 		[
 			'Longitud de bloque',
@@ -408,11 +407,12 @@ def run(file_name: str):
 		ratio = calculate_ratio(encoded_length, file_content_length * BITS_IN_ASCII)
 		print(f'Ratio: {ratio} == {encoded_length} / {file_content_length * BITS_IN_ASCII}')
 
-		decoded = decode_text_with_separator(encoded_text, SEPARATOR, probabilities_by_letter, block_divisor)
-		print(f'Decoded text: {decoded.replace("  ", NEW_LINE)}')
-		print('\n')
+		# decoded = decode_text_with_separator(encoded_text, SEPARATOR, probabilities_by_letter, block_divisor)
+		# print(f'Decoded text: {decoded.replace("  ", NEW_LINE)}')
+		# print('\n')
 		export_list.append([str(block_divisor), str(encoded_length), str(file_content_length * BITS_IN_ASCII), str(format_float(ratio, 6)), format_float(end_time - start_time, 6)])
 
+	exporter = ExportCSV(file_name + "_Exported.csv")
 	exporter.export(export_list)
 
 def decode_text_with_separator(
@@ -453,4 +453,4 @@ def encode_block(block: str, probs: Dict[str, Item]) -> str:
 	return num_decimal_part
 
 if __name__ == '__main__':
-	run("datos_1800")
+	run("datos_1800_2")

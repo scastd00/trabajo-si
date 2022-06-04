@@ -1,0 +1,22 @@
+De la definición se deduce que las matrices de control no son únicas y que conocida una
+matriz de control H podemos obtener las palabras código calculando las soluciones del sistema
+lineal homogéneo con matriz de coeficientes H.
+Aunque el método explicado para el cálculo de la distancia mı́nima de un código lineal
+ahorra operaciones, sigue siendo demasiado costoso. Por eso es común encontrar estudios que
+buscan métodos alternativos para el cálculo de esta distancia. Un método válido para cualquier
+código lineal viene dado por el siguiente teorema.
+Teorema 4.10. Si H es una matriz de control del código lineal C, entonces la distancia mı́nima
+de C es d si y sólo si d es el mayor entero para el cual d − 1 columnas cualesquiera de H son
+linealmente independientes.
+En general, el coste operacional de este método es demasiado alto, aunque resulta muy útil
+en algunos casos. Por ejemplo, si se trata de un código binario y las columnas de H son no
+nulas y distintas dos a dos, entonces la distancia mı́nima del código es al menos tres, pues sobre
+F 2 dos vectores son linealmente independientes si y sólo si son no nulos y distintos.
+Como en cualquier subespacio vectorial, existe una relación entre sus ecuaciones paramétricas e implícitas.
+Esto se traduce en la siguiente relación matricial.
+Proposición Si G y H son dos matrices con dimensiones k × n y (n − k) × n, respectivamente,
+y de rango máximo, entonces la condición necesaria y suficiente para que G y H sean
+matrices generadora y de control del mismo código lineal es que GH T = 0.
+Como consecuencia de este resultado, si la matriz generadora (resp. de control) de un código
+C está dada en forma estándar G = (I k |A) entonces la matriz por bloques H = (−A T |I n−k )
+es una matriz de control (resp. generadora).

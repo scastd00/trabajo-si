@@ -1,0 +1,20 @@
+El objetivo principal de los Códigos Criptográficos es realizar una codificación de la infor-
+mación digital (escrita en un alfabeto finito) para transmitirla por un canal discreto de forma
+que si una persona no autorizada accede al canal, es decir, accede al mensaje codificado, no
+tenga opción de recuperar o distorsionar el mensaje original.
+Inicialmente, las técnicas criptográficas aparecen ligadas a la necesidad de gobiernos o ejérci-
+tos de enviar información interna en secreto, con objeto de no poder ser interpretada por el
+enemigo. En sentido contrario, aparece la necesidad de descifrar los mensajes encriptados.
+Con la llegada de los dispositivos electrónicos esta necesidad de encriptar la información se
+convierte en universal. Los medios informáticos o electrónicos necesitan suplir la garantı́a de
+confidencialidad proporcionada por un mensajero personal. A partir de los años 70, la criptologı́a
+comienza a estructurarse como una disciplina cientı́fica, definiendo con claridad sus objetivos
+y sistematizando sus métodos.
+En un contexto simple, la seguridad de la transmisión de información entre dos personas A
+(letra heredada de la criptografı́a clásica donde se usaba la denominación Alice/Alicia) y B (letra
+heredada de la criptografı́a clásica donde se usaba la denominación Bob/Benito) se consigue
+codificando los mensajes enviados entre ellos con objeto de anular la posible intervención de
+una tercera persona C. La intervención puede ser con el objeto de conocer el contenido de
+los mensaje o para suplantar la personalidad de uno de los interlocutores. Cuando el canal de
+transmisión entre A y B es inseguro, susceptible de la intervención de terceros, la criptografı́a
+estudia métodos de codificación de la información con objeto de que los usuarios A
