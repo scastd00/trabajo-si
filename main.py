@@ -365,7 +365,7 @@ def divisorsOf(num: int, minimum: int = 0) -> List[int]:
 def run(file_name: str):
 	file_content = read_file(file_name)
 	file_content_length = len(file_content)
-	divisors = divisorsOf(file_content_length)  # Todo: Change second parameter to something more reasonable
+	divisors = divisorsOf(file_content_length)
 	# print(divisors)
 	#
 	# return
