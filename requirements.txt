@@ -1,5 +1,5 @@
 binary-fractions==1.1.0
 pip==22.0.4
-setuptools==62.1.0
+setuptools==65.5.1
 six==1.16.0
 wheel==0.38.1
